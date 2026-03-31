@@ -21,3 +21,5 @@ To run the project:
 2. Place it in /data/raw_data.csv
 
 ## Setup
+
+property_age was recalculated as listing_year - year_constructed to align property age with the actual listing date rather than the current year. This avoids artificially aging the properties and improves the validity of age-based analysis.

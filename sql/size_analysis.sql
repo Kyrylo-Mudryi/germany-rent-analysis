@@ -39,9 +39,9 @@ WITH size_segmented AS (
         *,
         CASE
             WHEN living_space < 40 THEN 'Under 40 m²'
-            WHEN living_space < 60 THEN '40–59 m²'
-            WHEN living_space < 80 THEN '60–79 m²'
-            WHEN living_space < 100 THEN '80–99 m²'
+            WHEN living_space < 60 THEN '40-59 m²'
+            WHEN living_space < 80 THEN '60-79 m²'
+            WHEN living_space < 100 THEN '80-99 m²'
             ELSE '100+ m²'
         END AS size_bucket
     FROM rentals_cleaned
@@ -64,8 +64,8 @@ GROUP BY s.size_bucket, o.overall_median_price_per_m2
 ORDER BY
     CASE s.size_bucket
         WHEN 'Under 40 m²' THEN 1
-        WHEN '40–59 m²' THEN 2
-        WHEN '60–79 m²' THEN 3
-        WHEN '80–99 m²' THEN 4
+        WHEN '40-59 m²' THEN 2
+        WHEN '60-79 m²' THEN 3
+        WHEN '80-99 m²' THEN 4
         WHEN '100+ m²' THEN 5
     END;
