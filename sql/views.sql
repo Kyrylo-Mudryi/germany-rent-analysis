@@ -64,7 +64,8 @@ SELECT
     ROUND(AVG(price_per_m2)::numeric, 2) AS avg_price_per_m2,
     ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_per_m2)::numeric, 2) AS median_price_per_m2,
     ROUND(MIN(price_per_m2)::numeric, 2) AS min_price_per_m2,
-    ROUND(MAX(price_per_m2)::numeric, 2) AS max_price_per_m2
+    ROUND(MAX(price_per_m2)::numeric, 2) AS max_price_per_m2,
+    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY total_rent)::numeric, 2) AS median_total_rent
 FROM vw_rentals_enriched
 GROUP BY city
 HAVING COUNT(*) >= 30;
@@ -164,3 +165,22 @@ SELECT
 FROM vw_rentals_enriched vr
 CROSS JOIN overall_median o
 GROUP BY vr.age_group, vr.age_group_order, o.overall_median_price_per_m2;
+
+
+CREATE OR REPLACE VIEW vw_size_group_summary AS
+WITH overall_median AS (
+    SELECT
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_per_m2) AS overall_median_price_per_m2
+    FROM vw_rentals_enriched
+)
+SELECT
+    vr.size_group,
+    vr.size_group_order,
+    COUNT(*) AS number_of_listings,
+    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY vr.total_rent)::numeric, 2) AS median_total_rent,
+    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY vr.price_per_m2)::numeric, 2) AS median_price_per_m2,
+    ROUND(o.overall_median_price_per_m2::numeric, 2) AS overall_median_price_per_m2,
+    ROUND((PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY vr.price_per_m2) - o.overall_median_price_per_m2)::numeric, 2) AS price_gap_vs_overall
+FROM vw_rentals_enriched vr
+CROSS JOIN overall_median o
+GROUP BY vr.size_group, vr.size_group_order, o.overall_median_price_per_m2;
