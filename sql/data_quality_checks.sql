@@ -1,3 +1,5 @@
+-- Basic data quality check:
+-- evaluate completeness of key categorical columns.
 SELECT
     COUNT(*) AS total_rows,
     COUNT(heating_type) AS heating_type_not_null,
@@ -6,6 +8,9 @@ SELECT
     COUNT(type_of_flat) AS type_of_flat_not_null
 FROM rentals_cleaned;
 
+
+-- Range check for core numeric features:
+-- detect impossible or suspicious min / max values.
 SELECT
     MIN(total_rent) AS min_total_rent,
     MAX(total_rent) AS max_total_rent,

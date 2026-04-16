@@ -1,6 +1,12 @@
+-- View: enriched rental listings
+-- Purpose:
+-- create reusable analytical features for segmentation,
+-- filtering, and dashboard visuals in Power BI.
 CREATE OR REPLACE VIEW vw_rentals_enriched AS
 SELECT
     r.*,
+
+    -- Group listings by room count for comparison visuals
     CASE
         WHEN r.no_rooms < 1.5 THEN '1 room'
         WHEN r.no_rooms < 2.5 THEN '2 rooms'
@@ -8,6 +14,8 @@ SELECT
         WHEN r.no_rooms < 4.5 THEN '4 rooms'
         ELSE '5+ rooms'
     END AS rooms_group,
+
+    -- Numeric sort key for room groups
     CASE
         WHEN r.no_rooms < 1.5 THEN 1
         WHEN r.no_rooms < 2.5 THEN 2
@@ -15,6 +23,8 @@ SELECT
         WHEN r.no_rooms < 4.5 THEN 4
         ELSE 5
     END AS rooms_group_order,
+
+    -- Group listings by living space
     CASE
         WHEN r.living_space < 40 THEN 'Under 40 m2'
         WHEN r.living_space < 60 THEN '40-59 m2'
@@ -22,6 +32,8 @@ SELECT
         WHEN r.living_space < 100 THEN '80-99 m2'
         ELSE '100+ m2'
     END AS size_group,
+
+    -- Numeric sort key for size groups
     CASE
         WHEN r.living_space < 40 THEN 1
         WHEN r.living_space < 60 THEN 2
@@ -29,6 +41,8 @@ SELECT
         WHEN r.living_space < 100 THEN 4
         ELSE 5
     END AS size_group_order,
+
+    -- Group properties by building age
     CASE
         WHEN r.property_age <= 5 THEN '0-5 years'
         WHEN r.property_age <= 10 THEN '6-10 years'
@@ -36,6 +50,8 @@ SELECT
         WHEN r.property_age <= 40 THEN '21-40 years'
         ELSE '41+ years'
     END AS age_group,
+
+    -- Numeric sort key for age groups
     CASE
         WHEN r.property_age <= 5 THEN 1
         WHEN r.property_age <= 10 THEN 2
@@ -43,12 +59,18 @@ SELECT
         WHEN r.property_age <= 40 THEN 4
         ELSE 5
     END AS age_group_order,
+
+    -- Replace missing quality categories with a readable fallback
     COALESCE(r.condition, 'No data') AS condition_group,
     COALESCE(r.interior_qual, 'No data') AS interior_qual_group,
+
+    -- Simplified construction status used in comparisons
     CASE
         WHEN r.newly_const THEN 'New build'
         ELSE 'Existing stock'
     END AS construction_status,
+
+    -- Broad price positioning segment
     CASE
         WHEN r.price_per_m2 >= 25 THEN 'Very high price'
         WHEN r.price_per_m2 >= 15 THEN 'High price'
@@ -57,6 +79,10 @@ SELECT
     END AS price_segment
 FROM rentals_cleaned r;
 
+-- View: city-level rental price summary
+-- Purpose:
+-- provide city KPIs for market comparison pages and rankings.
+-- Includes only cities with at least 30 listings.
 CREATE OR REPLACE VIEW vw_city_price_summary AS
 SELECT
     city,
@@ -70,6 +96,10 @@ FROM vw_rentals_enriched
 GROUP BY city
 HAVING COUNT(*) >= 30;
 
+-- View: room-group summary
+-- Purpose:
+-- compare listing volume, median rent, and median price per m²
+-- across room-count segments relative to the overall market median
 CREATE OR REPLACE VIEW vw_rooms_group_summary AS
 WITH overall_median AS (
     SELECT
@@ -88,6 +118,10 @@ FROM vw_rentals_enriched vr
 CROSS JOIN overall_median o
 GROUP BY vr.rooms_group, vr.rooms_group_order, o.overall_median_price_per_m2;
 
+-- View: amenities summary
+-- Purpose:
+-- compare listings with and without selected amenities
+-- and measure the median price premium for each amenity.
 CREATE OR REPLACE VIEW vw_amenities_summary AS
 WITH amenity_summary AS (
     SELECT
@@ -148,6 +182,10 @@ SELECT
 FROM amenity_summary
 GROUP BY amenity;
 
+-- View: property age summary
+-- Purpose:
+-- compare rental metrics across building age groups
+-- relative to the overall market median price per m².
 CREATE OR REPLACE VIEW vw_property_age_summary AS
 WITH overall_median AS (
     SELECT
@@ -166,7 +204,10 @@ FROM vw_rentals_enriched vr
 CROSS JOIN overall_median o
 GROUP BY vr.age_group, vr.age_group_order, o.overall_median_price_per_m2;
 
-
+-- View: size-group summary
+-- Purpose:
+-- compare rental metrics across apartment size segments
+-- relative to the overall market median price per m².
 CREATE OR REPLACE VIEW vw_size_group_summary AS
 WITH overall_median AS (
     SELECT

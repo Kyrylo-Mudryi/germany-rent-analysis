@@ -1,3 +1,8 @@
+-- Compare rental price per m² for listings with and without selected amenities.
+-- For each amenity, calculate:
+-- - number of listings where the amenity is present or absent
+-- - median price per m² for both groups
+-- - price gap between listings with and without the amenity
 WITH amenity_summary AS (
     SELECT
         'balcony' AS amenity,
@@ -48,6 +53,8 @@ WITH amenity_summary AS (
     GROUP BY cellar
 )
 
+-- Reshape the aggregated results into one row per amenity,
+-- separating metrics for listings with and without the amenity.
 SELECT
     amenity,
     MAX(CASE WHEN availability = true THEN number_of_listings END) AS listings_with_amenity,

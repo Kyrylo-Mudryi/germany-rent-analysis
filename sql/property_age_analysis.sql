@@ -1,3 +1,9 @@
+-- Property age analysis:
+-- evaluate how building age relates to rent levels overall
+-- and within the largest German cities.
+
+-- Overall market comparison by property age group
+-- Includes premium / discount vs overall median price per m²
 WITH overall_median AS (
     SELECT
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_per_m2) AS overall_median_price_per_m2
@@ -15,6 +21,8 @@ CROSS JOIN overall_median o
 GROUP BY vr.age_group, vr.age_group_order, o.overall_median_price_per_m2
 ORDER BY vr.age_group_order;
 
+-- Property age comparison inside top 10 cities
+-- Only age groups with at least 20 listings
 WITH large_cities AS (
     SELECT
         city,

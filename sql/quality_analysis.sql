@@ -1,3 +1,9 @@
+-- Property quality analysis:
+-- examine how construction status, condition, and interior quality
+-- relate to rental price levels.
+
+-- Price comparison by construction status
+-- Includes premium / discount vs overall median price per m²
 WITH overall_median AS (
     SELECT
         PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY price_per_m2) AS overall_median_price_per_m2
@@ -15,6 +21,7 @@ CROSS JOIN overall_median o
 GROUP BY v.construction_status, o.overall_median_price_per_m2
 ORDER BY median_price_per_m2 DESC;
 
+-- Median price per m² by property condition
 SELECT
     condition_group,
     COUNT(*) AS number_of_listings,
@@ -23,6 +30,7 @@ FROM vw_rentals_enriched
 GROUP BY condition_group
 ORDER BY median_price_per_m2 DESC;
 
+-- Median price per m² by interior quality
 SELECT
     interior_qual_group,
     COUNT(*) AS number_of_listings,
@@ -31,6 +39,8 @@ FROM vw_rentals_enriched
 GROUP BY interior_qual_group
 ORDER BY median_price_per_m2 DESC;
 
+-- Combined effect of construction status and condition
+-- Only combinations with at least 30 listings
 WITH quality_combinations AS (
     SELECT
         construction_status,

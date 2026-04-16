@@ -1,3 +1,9 @@
+-- Window function analysis:
+-- rank cities, districts, and listings by rental price,
+-- and compare local price levels against city benchmarks.
+
+-- Rank cities by median price per m²
+-- Only cities with at least 30 listings
 WITH city_medians AS (
     SELECT
         city,
@@ -15,6 +21,8 @@ SELECT
 FROM city_medians
 ORDER BY city_rank, city;
 
+-- Rank districts within each city by median price per m²
+-- Compare district-level average and median price vs city benchmarks
 WITH district_summary AS (
     SELECT
         city,
@@ -51,6 +59,8 @@ INNER JOIN city_summary cs
     ON ds.city = cs.city
 ORDER BY ds.city, district_rank_in_city, ds.district;
 
+-- Identify districts priced above their city average
+-- Uses a window function to attach city average to each listing
 WITH listing_base AS (
     SELECT
         city,
@@ -82,6 +92,8 @@ FROM district_vs_city
 WHERE district_avg_price_per_m2 > city_avg_price_per_m2
 ORDER BY city, district_rank_by_avg_price, district;
 
+-- Rank listings within each city by price per m²
+-- Keep only listings above the city median
 WITH city_medians AS (
     SELECT
         city,
@@ -105,6 +117,8 @@ INNER JOIN city_medians cm
 WHERE r.price_per_m2 > cm.city_median_price_per_m2
 ORDER BY r.city, listing_rank_in_city, r.price_per_m2 DESC;
 
+-- Identify premium listings in each city
+-- Premium = top price decile and total rent at or above city median
 WITH city_thresholds AS (
     SELECT
         city,
