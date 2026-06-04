@@ -16,7 +16,6 @@ The analysis is designed to answer practical pricing questions such as:
 - How do apartment size and room count affect total rent and price per m2?
 - Do newer or higher-quality properties command a premium?
 - Which amenities are associated with higher rental prices?
-- Can SQL outputs be trusted by validating them against pandas calculations?
 
 ## Dashboard Preview
 
